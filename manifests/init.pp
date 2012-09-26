@@ -183,11 +183,21 @@ class graphite {
   }
 
 
+    exec { "carbon-stop":
+                command => "pkill -9 -f carbon-cache.py",
+                path => "/bin:/usr/bin:/sbin:/usr/sbin",
+                logoutput => true,
+                onlyif => "pgrep -f carbon-cache.py", 
+                notify => Exec["carbon-start"],
+        }
+
+
     exec { "carbon-start":
                 command => "python /opt/graphite/bin/carbon-cache.py start",
                 path => "/bin:/usr/bin:/sbin:/usr/sbin",
                 logoutput => true,
-                require => Package['graphite-web'],
+                unless => "pgrep -f carbon-cache.py",
+                #require => Package['graphite-web'],
         }
 
 }
