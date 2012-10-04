@@ -85,12 +85,25 @@ class graphite ( $graphitehost ) {
        ensure   => 'installed',
     }
 
-    package { "graphite-web":
-       name     => "graphite-web",
+    package { "django-tagging":
+       name     => "django-tagging",
        ensure   => 'installed',
        provider => 'pip',
-       require  => [Package['python-cairo'], Package['libapache2-mod-python'], Package['python-django'], Package['python-ldap'], Package['python-memcache'], Package['python-sqlite'], Package['x11-apps'], Package['xfonts-base']]
     }
+   
+   exec { "graphite-web":
+        command => "pip install -q graphite-web",
+        path => "/bin:/usr/bin:/sbin:/usr/sbin",
+        logoutput => true,
+        timeout => 600,
+        }
+ 
+   #package { "graphite-web":
+   #    name     => "graphite-web",
+   #    ensure   => 'installed',
+   #    provider => 'pip',
+   #    require  => [Package['python-cairo'], Package['libapache2-mod-python'], Package['python-django'], Package['python-ldap'], Package['python-memcache'], Package['python-sqlite'], Package['x11-apps'], Package['xfonts-base']]
+    #}
 
     package { "carbon":
        name     => "carbon",
@@ -129,7 +142,7 @@ class graphite ( $graphitehost ) {
         owner   => 'root',
         group   => 'root',
         mode    => '655',
-        require => Package['graphite-web'],
+        require => Exec['graphite-web'],
     }
 
     file { '/opt/graphite/webapp/graphite/local_settings.py':
@@ -137,7 +150,7 @@ class graphite ( $graphitehost ) {
         owner   => 'root',
         group   => 'root',
         mode    => '655',
-        require => Package['graphite-web'],
+        require => Exec['graphite-web'],
     }
 
     file { "/etc/httpd":
@@ -151,7 +164,7 @@ class graphite ( $graphitehost ) {
         group   => 'root',
         mode    => '755',
         notify  => Service["httpd"],
-        require => Package['graphite-web'],
+        require => Exec['graphite-web'],
 }
 
     file { "/etc/apache2/sites-enabled/graphite":
@@ -167,11 +180,11 @@ class graphite ( $graphitehost ) {
 }
 
     exec { "graphite-syncdb":
-      command     => "python /opt/graphite/webapp/graphite/manage.py syncdb",
+      command     => "python /opt/graphite/webapp/graphite/manage.py syncdb --noinput",
       #refreshonly => true,
       logoutput => true,
       path => "/bin:/usr/bin:/sbin:/usr/sbin",
-      require     => Package['graphite-web'],
+      require     => Exec['graphite-web'],
     }
 
    
@@ -181,6 +194,7 @@ class graphite ( $graphitehost ) {
       group => "www-data",
       mode => "755",
       recurse => true,
+      require => Exec['graphite-web'],
       notify  => Service["httpd"],
   }
 
