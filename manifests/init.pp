@@ -7,7 +7,7 @@
 # Usage:
 # include graphite
 #
-class graphite {
+class graphite ( $graphitehost ) {
     include apache
 
     package { "gcc":
@@ -107,12 +107,14 @@ class graphite {
     }
 
     file { '/opt/graphite/conf/carbon.conf':
-        source  => 'puppet:///modules/graphite/carbon.conf',
+        #source  => 'puppet:///modules/graphite/carbon.conf',
         owner   => 'root',
         group   => 'root',
         mode    => '644',
         require => Package['carbon'],
+        content => template('graphite/carbon.conf.erb'),
     }
+
 
     file { '/opt/graphite/conf/storage-schemas.conf':
         source  => 'puppet:///modules/graphite/storage-schemas.conf',
@@ -197,7 +199,6 @@ class graphite {
                 path => "/bin:/usr/bin:/sbin:/usr/sbin",
                 logoutput => true,
                 unless => "pgrep -f carbon-cache.py",
-                #require => Package['graphite-web'],
         }
 
 }
