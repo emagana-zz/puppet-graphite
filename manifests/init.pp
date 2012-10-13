@@ -96,6 +96,7 @@ class graphite ( $graphitehost ) {
         path => "/bin:/usr/bin:/sbin:/usr/sbin",
         logoutput => true,
         timeout => 600,
+	require => Package["python-pip"],
         }
  
    #package { "graphite-web":
@@ -205,6 +206,7 @@ class graphite ( $graphitehost ) {
                 logoutput => true,
                 onlyif => "pgrep -f carbon-cache.py", 
                 notify => Exec["carbon-start"],
+		require => Package["carbon"],
         }
 
 
@@ -213,6 +215,7 @@ class graphite ( $graphitehost ) {
                 path => "/bin:/usr/bin:/sbin:/usr/sbin",
                 logoutput => true,
                 unless => "pgrep -f carbon-cache.py",
+		require => Package["carbon"],
         }
 
 }
