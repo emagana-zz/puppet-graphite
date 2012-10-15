@@ -9,17 +9,13 @@
 #
 class graphite ( $graphitehost ) {
     include apache
+    include pip
 
     package { "gcc":
        name     => "gcc",
        ensure   => "installed",
     }
    
-    package { "python-pip":
-       name     => "python-pip",
-       ensure   => "installed",
-    }
-
     package { "build-essential":
        name     => "build-essential",
        ensure   => "installed",
@@ -96,6 +92,7 @@ class graphite ( $graphitehost ) {
         path => "/bin:/usr/bin:/sbin:/usr/sbin",
         logoutput => true,
         timeout => 600,
+	require => Package["python-pip"],
         }
  
    #package { "graphite-web":
@@ -205,6 +202,7 @@ class graphite ( $graphitehost ) {
                 logoutput => true,
                 onlyif => "pgrep -f carbon-cache.py", 
                 notify => Exec["carbon-start"],
+		require => Package["carbon"],
         }
 
 
@@ -213,6 +211,7 @@ class graphite ( $graphitehost ) {
                 path => "/bin:/usr/bin:/sbin:/usr/sbin",
                 logoutput => true,
                 unless => "pgrep -f carbon-cache.py",
+		require => Package["carbon"],
         }
 
 }
