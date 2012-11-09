@@ -8,18 +8,13 @@
 # include graphite
 #
 class graphite ( $graphitehost ) {
-    include apache
+    include pip
 
     package { "gcc":
        name     => "gcc",
        ensure   => "installed",
     }
    
-    package { "python-pip":
-       name     => "python-pip",
-       ensure   => "installed",
-    }
-
     package { "build-essential":
        name     => "build-essential",
        ensure   => "installed",
@@ -99,13 +94,6 @@ class graphite ( $graphitehost ) {
 	require => Package["python-pip"],
         }
  
-   #package { "graphite-web":
-   #    name     => "graphite-web",
-   #    ensure   => 'installed',
-   #    provider => 'pip',
-   #    require  => [Package['python-cairo'], Package['libapache2-mod-python'], Package['python-django'], Package['python-ldap'], Package['python-memcache'], Package['python-sqlite'], Package['x11-apps'], Package['xfonts-base']]
-    #}
-
     package { "carbon":
        name     => "carbon",
        ensure   => 'installed',
@@ -164,7 +152,6 @@ class graphite ( $graphitehost ) {
         owner   => 'root',
         group   => 'root',
         mode    => '755',
-        notify  => Service["httpd"],
         require => Exec['graphite-web'],
 }
 
@@ -177,12 +164,10 @@ class graphite ( $graphitehost ) {
     file { "/etc/httpd/wsgi":
         ensure => "directory",
         require => File['/etc/httpd'],
-        notify  => Service["httpd"],
 }
 
     exec { "graphite-syncdb":
       command     => "python /opt/graphite/webapp/graphite/manage.py syncdb --noinput",
-      #refreshonly => true,
       logoutput => true,
       path => "/bin:/usr/bin:/sbin:/usr/sbin",
       require     => Exec['graphite-web'],
@@ -196,7 +181,6 @@ class graphite ( $graphitehost ) {
       mode => "755",
       recurse => true,
       require => Exec['graphite-web'],
-      notify  => Service["httpd"],
   }
 
 
@@ -219,5 +203,3 @@ class graphite ( $graphitehost ) {
         }
 
 }
-
-
